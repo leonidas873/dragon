@@ -41,10 +41,10 @@ async function setup() {
   await setup();
   await preload(app);
   const balanceManager = new BalanceManager(initial_COIN_BALANCE, INITIAL_FLASH_BALANCE);
-  const background = new Background(app);
+  new Background(app);
   addSideIce(app);
   addSideIce3(app);
-  const way = new Way(app);
+  new Way(app);
   const dragon = new Dragon(app);
   
   

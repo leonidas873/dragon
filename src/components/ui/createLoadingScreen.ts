@@ -1,4 +1,4 @@
-import { Application, Assets, Text, Container, Graphics, TextStyle } from "pixi.js";
+import { Application, Text, Container, Graphics, TextStyle } from "pixi.js";
 
 export function createLoadingScreen(app: Application): { container: Container; progressText: Text } {
     const loadingContainer = new Container();
