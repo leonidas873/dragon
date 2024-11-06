@@ -20,7 +20,6 @@ export class IceCubeManager {
     public playerAlive: boolean = true;
     private handleUiEventsOnDeath: () => void;
     private coinAnimations: Array<{ cancel: () => void }> = [];
-    private isCheckForLossAdded: boolean = false;
 
     constructor(app: Application, container: Container, dragon: Dragon, balanceManager: BalanceManager, handleUiEventsOnDeath: () => void) {
         this.app = app;
@@ -46,19 +45,11 @@ export class IceCubeManager {
             this.stopPlaying();
             this.handleUiEventsOnDeath();
             this.stopCoinAnimations();
-            this.removeCheckForLoss();
             console.log("Player has died");
 
             return true;
         }
         return false;
-    }
-
-    private removeCheckForLoss() {
-        if (this.isCheckForLossAdded) {
-            this.app.ticker.remove(this.checkForLoss);
-            this.isCheckForLossAdded = false;
-        }
     }
 
     private isIceCubeInAttackRange(): boolean {
@@ -87,11 +78,6 @@ export class IceCubeManager {
             this.iceCubes.push(iceCube);
         }, this.spawnInterval);
 
-        // Only add checkForLoss if not already added
-        if (!this.isCheckForLossAdded) {
-            this.app.ticker.add(this.checkForLoss);
-            this.isCheckForLossAdded = true;
-        }
 
         this.app.ticker.add(this.update, this);
     }
@@ -99,7 +85,6 @@ export class IceCubeManager {
     public stopPlaying() {
         this.isPlaying = false;
         this.stopSpawningIceCubes();
-        this.removeCheckForLoss();
         this.app.ticker.remove(this.update, this);
         this.iceCubes.forEach(iceCube => iceCube.destroy());
         this.iceCubes = [];

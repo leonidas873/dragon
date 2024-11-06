@@ -18,12 +18,16 @@ export class GameUI {
     private iceCubeSpawner: IceCubeManager;
     private playereBtn!: Container;
     public betButton!: Container;
+    private checkPlayerLossBound: () => void; // **Reference for bound function**
+
 
     constructor(app: Application, balanceManager: BalanceManager, iceCubeSpawner: IceCubeManager) {
         this.app = app;
         this.UIContainer = new Container();
         this.balanceManager = balanceManager;
         this.iceCubeSpawner = iceCubeSpawner;
+        this.checkPlayerLossBound = this.checkPlayerLoss.bind(this); // **Bind once and save the reference**
+
         this.setupUI();
     }
 
@@ -121,6 +125,8 @@ export class GameUI {
     }
 
     private handleCashout() {
+        this.app.ticker.remove(this.checkPlayerLossBound);
+        // this.iceCubeSpawner.removeCheckForLoss();
         this.balanceManager.setCashout();
         
         this.betButton.interactive = true;
@@ -173,7 +179,7 @@ export class GameUI {
         this.cashOutSprite.visible = false;
         this.startSprite.visible = true;
         this.betButton.interactive = true;
-        this.app.ticker.remove(this.checkPlayerLoss.bind(this));
+        this.app.ticker.remove(this.checkPlayerLossBound);
 
     }
 
@@ -189,18 +195,17 @@ export class GameUI {
             this.isStartButton = false;
             this.cashOutSprite.visible = true;
             this.startSprite.visible = false;
-            this.app.ticker.add(this.checkPlayerLoss.bind(this));
             this.iceCubeSpawner.playerAlive = true;
 
-            this.app.ticker.remove(this.checkPlayerLoss.bind(this));
-            this.app.ticker.add(this.checkPlayerLoss.bind(this));
+            this.app.ticker.remove(this.checkPlayerLossBound);
+            this.app.ticker.add(this.checkPlayerLossBound);
 
         } else {
             if(!this.balanceManager.getCoinBalance() && !this.balanceManager.getFlashBalance()){
                 return;
             }
 
-            this.app.ticker.remove(this.checkPlayerLoss.bind(this));
+            this.app.ticker.remove(this.checkPlayerLossBound);
             this.handleCashout();
             this.handleReset();
         }
