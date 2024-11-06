@@ -11,7 +11,7 @@ export class IceCubeManager {
     private app: Application;
     private container: Container;
     private iceCubes: IceCube[] = [];
-    private spawnInterval: number = 2000;
+    private spawnInterval: number = 3500;
     private spawnIntervalId: number | null = null;
     private dragon: Dragon;
     private isPlaying: boolean = false;
