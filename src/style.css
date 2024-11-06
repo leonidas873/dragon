@@ -1,0 +1,10 @@
+@font-face {
+    font-family: 'Keons';
+    src: url('/Font/Keons.240827-1105.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+  }
+  
+  * {
+    font-family: 'Keons', sans-serif;
+  }
