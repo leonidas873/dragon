@@ -1,7 +1,7 @@
 import { Application, Container } from "pixi.js";
 import { IceCube, IceCubeState } from "./iceCube";
 import { Dragon } from "../dragon/dragon";
-import { coinAnimation } from "../prize/coinAnimation"; // Import coinAnimation
+import { coinAnimation } from "../prize/coinAnimation";
 import { BalanceManager } from "../prize/balanceMnager";
 import { destroyCurrentWins, drawCurrentWin } from "../prize/drawCurrentWin";
 import { generatePrize } from "../prize/generatePrize";
@@ -20,22 +20,24 @@ export class IceCubeManager {
     public playerAlive: boolean = true;
     private handleUiEventsOnDeath: () => void;
     private coinAnimations: Array<{ cancel: () => void }> = [];
+    private isCheckForLossAdded: boolean = false;
 
     constructor(app: Application, container: Container, dragon: Dragon, balanceManager: BalanceManager, handleUiEventsOnDeath: () => void) {
         this.app = app;
         this.balanceManager = balanceManager;
         this.container = container;
         this.dragon = dragon;
-        this.app.ticker.add(this.checkForLoss, this);
-
         this.handleUiEventsOnDeath = handleUiEventsOnDeath;
+
+        this.checkForLoss = this.checkForLoss.bind(this);
     }
 
-    public checkForLoss(): boolean {
+    checkForLoss(): boolean {
         if (this.isPlaying && this.isIceCubeInAttackRange()) {
-            return false; // Skip loss check if an ice cube is in range
+            return false;
         }
-
+        console.log(this.isPlaying, this.playerAlive);
+        
         if (this.isPlaying && playerLost() && this.playerAlive) {
             this.playerAlive = false;
             this.balanceManager.resetCurrentGameBalances();
@@ -44,12 +46,19 @@ export class IceCubeManager {
             this.stopPlaying();
             this.handleUiEventsOnDeath();
             this.stopCoinAnimations();
-            this.app.ticker.remove(this.checkForLoss, this);
+            this.removeCheckForLoss();
             console.log("Player has died");
 
             return true;
         }
         return false;
+    }
+
+    private removeCheckForLoss() {
+        if (this.isCheckForLossAdded) {
+            this.app.ticker.remove(this.checkForLoss);
+            this.isCheckForLossAdded = false;
+        }
     }
 
     private isIceCubeInAttackRange(): boolean {
@@ -71,23 +80,26 @@ export class IceCubeManager {
     }
 
     public startSpawning() {
-
         this.isPlaying = true;
         this.playerAlive = true;
         this.spawnIntervalId = window.setInterval(() => {
             const iceCube = new IceCube(this.app, this.container);
             this.iceCubes.push(iceCube);
         }, this.spawnInterval);
-        this.app.ticker.add(this.checkForLoss, this);
+
+        // Only add checkForLoss if not already added
+        if (!this.isCheckForLossAdded) {
+            this.app.ticker.add(this.checkForLoss);
+            this.isCheckForLossAdded = true;
+        }
 
         this.app.ticker.add(this.update, this);
     }
 
     public stopPlaying() {
-
         this.isPlaying = false;
         this.stopSpawningIceCubes();
-        this.app.ticker.remove(this.checkForLoss, this);
+        this.removeCheckForLoss();
         this.app.ticker.remove(this.update, this);
         this.iceCubes.forEach(iceCube => iceCube.destroy());
         this.iceCubes = [];
@@ -156,6 +168,7 @@ export class IceCubeManager {
             return true;
         });
     }
+
     public pause() {
         this.stopSpawningIceCubes();
     }
@@ -165,6 +178,7 @@ export class IceCubeManager {
             this.startSpawning();
         }
     }
+
     public stopSpawningIceCubes() {
         if (this.spawnIntervalId !== null) {
             clearInterval(this.spawnIntervalId);

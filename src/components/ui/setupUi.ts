@@ -1,4 +1,4 @@
-import { Application, Container, Sprite, Texture, Text, TextStyle, Graphics, SCALE_MODES } from "pixi.js";
+import { Application, Container, Sprite, Texture, Text, TextStyle, Graphics } from "pixi.js";
 import { cashOutAnimation } from "../prize/cashOutAnimation";
 import { BalanceManager } from "../prize/balanceMnager";
 import { destroyCurrentWins } from "../prize/drawCurrentWin";
@@ -29,7 +29,6 @@ export class GameUI {
 
     private setupUI() {
         const frame = new Sprite(Texture.from("Uv"));
-        frame.texture.baseTexture.scaleMode = SCALE_MODES.NEAREST;
 
         frame.width = this.app.screen.width;
         frame.height = this.app.screen.height;
@@ -68,14 +67,14 @@ export class GameUI {
         });
 
         const coinBalanceContainer = new Container();
-        this.coinBalanceText = new Text("0", balanceTextStyle);
+        this.coinBalanceText = new Text({text:"0", style:balanceTextStyle});
         this.coinBalanceText.position.set(30, -1);
         coinBalanceContainer.addChild(this.coinBalanceText);
         coinBalanceContainer.position.set(40, this.app.screen.height - 50);
         this.UIContainer.addChild(coinBalanceContainer);
 
         const flashBalanceContainer = new Container();
-        this.flashBalanceText = new Text("0", balanceTextStyle);
+        this.flashBalanceText = new Text({text:"0", style:balanceTextStyle});
         this.flashBalanceText.position.set(30, 11);
         flashBalanceContainer.addChild(this.flashBalanceText);
         flashBalanceContainer.position.set(40, this.app.screen.height - 100);
@@ -83,9 +82,8 @@ export class GameUI {
 
         const multiplierContainer = new Container();
         const multiplierBackground = new Graphics();
-        multiplierBackground.beginFill(0xf5a603);
-        multiplierBackground.drawRect(0, 0, 30, 20);
-        multiplierBackground.endFill();
+        multiplierBackground.rect(0, 0, 30, 20);
+        multiplierBackground.fill({color:0xf5a603});
         multiplierContainer.addChild(multiplierBackground);
 
         const multiplierTextStyle = new TextStyle({
@@ -175,6 +173,8 @@ export class GameUI {
         this.cashOutSprite.visible = false;
         this.startSprite.visible = true;
         this.betButton.interactive = true;
+        this.app.ticker.remove(this.checkPlayerLoss.bind(this));
+
     }
 
     private checkPlayerLoss() {
@@ -192,6 +192,9 @@ export class GameUI {
             this.app.ticker.add(this.checkPlayerLoss.bind(this));
             this.iceCubeSpawner.playerAlive = true;
 
+            this.app.ticker.remove(this.checkPlayerLoss.bind(this));
+            this.app.ticker.add(this.checkPlayerLoss.bind(this));
+
         } else {
             if(!this.balanceManager.getCoinBalance() && !this.balanceManager.getFlashBalance()){
                 return;
@@ -208,9 +211,8 @@ export class GameUI {
         this.multiplierModal = new Container();
         this.multiplierModal.visible = false;
         const modalBackground = new Graphics();
-        modalBackground.beginFill(0x000000, 0.8); // Black background with opacity
-        modalBackground.drawRect(0, 0, this.app.screen.width, this.app.screen.height);
-        modalBackground.endFill();
+        modalBackground.rect(0, 0, this.app.screen.width, this.app.screen.height);
+        modalBackground.fill({color:0x000000, alpha:0.8});
         this.multiplierModal.addChild(modalBackground);
 
         const multipliers = [1, 2, 3, 4, 5];
@@ -222,7 +224,7 @@ export class GameUI {
         });
 
         multipliers.forEach((multiplier, index) => {
-            const optionText = new Text(`${multiplier}x`, textStyle);
+            const optionText = new Text({text:`${multiplier}x`, style:textStyle});
             optionText.anchor.set(0.5);
             optionText.position.set(this.app.screen.width / 2, 200 + index * 50);
             optionText.interactive = true;
