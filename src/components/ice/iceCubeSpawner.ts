@@ -161,7 +161,7 @@ export class IceCubeManager {
     }
 
     public resume() {
-        if (this.spawnIntervalId === null) {
+        if (this.isPlaying && this.spawnIntervalId === null) {
             this.startSpawning();
         }
     }
